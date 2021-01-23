@@ -3,17 +3,26 @@ const Users = require("./auth-model");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
+router.get('/users', async (req, res, next) => {
+  try {
+      res.json(await Users.find())
+  } catch(err) {
+    next(err)
+  }
+})
+
 router.post('/register', async (req, res, next) => {
   try {
     const {username, password} = req.body;
+
     if (!username || !password) {
-      return res.status(409).json({
+      return res.status(401).json({
         message: "username and password required"
       })
     }
     const user = await Users.findBy({username}).first()
     if (user) {
-      return res.status(409).json({
+      return res.status(401).json({
         message: "username taken"
       })
     }
@@ -52,13 +61,14 @@ router.post('/register', async (req, res, next) => {
 
 router.post('/login', async (req, res, next) => {
   try {
-    const { username, password} = req.body;
+    const {username, password} = req.body;
 
     if (!username || !password) {
       return res.status(401).json({
         message: "username and password required"
       })
     }
+
     const user = await Users.findBy({username}).first();
 
     if (!user) {
@@ -77,10 +87,10 @@ router.post('/login', async (req, res, next) => {
 
     const token = jwt.sign({
       userId: user.id,
-      useName: user.name
+      useName: user.username
     }, process.env.JWT_SECRET)
 
-      res.json({
+      res.status(200).json({
         message: `Welcome, ${user.username}`,
         token: token
       })
