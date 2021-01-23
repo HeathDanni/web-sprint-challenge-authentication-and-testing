@@ -1,11 +1,22 @@
 const router = require('express').Router();
+const Users = require("./auth-model");
 const bcrypt = require("bcryptjs");
 
 router.post('/register', async (req, res, next) => {
   try {
     const {username, password} = req.body;
+    const user = await Users.findBy({username}).first()
+    if (user) {
+      return res.status(409).json({
+        message: "username taken"
+      })
+    }
+      const newUser = await Users.add({username,
+        password: await bcrypt.hash(password, 13)
+      })
+        return res.status(201).json(newUser)
   } catch(err) {
-    next(err)
+      next(err)
   }
   /*
     IMPLEMENT
