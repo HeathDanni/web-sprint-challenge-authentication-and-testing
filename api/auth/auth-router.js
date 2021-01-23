@@ -5,6 +5,11 @@ const bcrypt = require("bcryptjs");
 router.post('/register', async (req, res, next) => {
   try {
     const {username, password} = req.body;
+    if (!username || !password) {
+      return res.status(409).json({
+        message: "username and password required"
+      })
+    }
     const user = await Users.findBy({username}).first()
     if (user) {
       return res.status(409).json({
